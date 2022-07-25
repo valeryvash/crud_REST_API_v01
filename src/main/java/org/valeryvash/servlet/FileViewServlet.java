@@ -8,6 +8,7 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
 
 @WebServlet(name = "FileViewServlet", value = "/file-view-servlet")
@@ -60,10 +61,17 @@ public class FileViewServlet extends HttpServlet {
             }
         }
 
+        response.setContentType("text/html");
+        PrintWriter writer = response.getWriter();
+
         if (file != null) {
-            // here we print object in response
+            start(writer);
+            body(writer,file);
+            end(writer);
         } else if (fileList != null && !fileList.isEmpty()) {
-            // or here we print list of objects in response
+            start(writer);
+            body(writer,fileList);
+            end(writer);
         } else {
             throw new ServletException("Unexpected action");
         }
@@ -72,5 +80,34 @@ public class FileViewServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);
+    }
+
+    private void start(PrintWriter writer) throws IOException {
+        writer.println("""
+                <!DOCTYPE html>
+                <html>
+                <head><title> File-view servlet response </head></title> 
+                <body>
+                <body><h1> File-view servlet response </h1>
+                """);
+    }
+
+    private void body(PrintWriter writer, File file) {
+        writer.println("<h3>File</h3>");
+        writer.println("ID : " + file.getId());
+        writer.println("<br/>");
+        writer.println("Name : " + file.getName());
+        writer.println("<br/>");
+        writer.println("Path to file: " + file.getFilePath());
+        writer.println("<br/>");
+        writer.println("<br/>");
+    }
+
+    private void body(PrintWriter writer, List<File> fileList) {
+        fileList.forEach(file -> body(writer,file));
+    }
+
+    private void end(PrintWriter writer) {
+        writer.println("</body></html>");
     }
 }
