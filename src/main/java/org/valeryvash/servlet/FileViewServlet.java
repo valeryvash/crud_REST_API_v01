@@ -43,9 +43,7 @@ public class FileViewServlet extends HttpServlet {
                 file = fileService.get(id);
             }
             case "update" -> {
-                //TODO check this method, may be we need to get(entityId) instead of new File()...set...
-                file = new File();
-                file.setId(id);
+                file = fileService.get(id);
                 file.setFilePath(filePath);
                 file.setName(name);
                 file = fileService.update(file);
