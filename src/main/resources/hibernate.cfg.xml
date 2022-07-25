@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE hibernate-configuration SYSTEM
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+    <session-factory>
+        <!--        the next 4 properties shall be changed while you download this app from repo-->
+        <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+        <property name="hibernate.connection.username">root</property>
+        <property name="hibernate.connection.password">root</property>
+        <property name="connection.url">jdbc:mysql://localhost:3306/crud_rest_api_v01</property>
+        <!-- Time zones https://www.baeldung.com/hibernate-date-time#time-zone-setup duplicates in SessionProvider class-->
+        <property name="hibernate.jdbc.time_zone">UTC</property>
+        <!--     the next three properties are using for excluding any data from console during app work-->
+        <property name="show_sql">true</property>
+        <property name="generate_statistics">true</property>
+        <property name="use_sql_comments">true </property>
+        <!--     create-drop for test purpose only. use validate for work purpose-->
+        <property name="hbm2ddl.auto"> validate </property>
+
+    </session-factory>
+</hibernate-configuration>
