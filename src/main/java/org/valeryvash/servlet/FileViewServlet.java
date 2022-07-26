@@ -71,7 +71,7 @@ public class FileViewServlet extends HttpServlet {
             body(writer,fileList);
             end(writer);
         } else {
-            throw new ServletException("Unexpected action");
+            throw new ServletException("Unexpected servlet condition");
         }
     }
 

@@ -8,14 +8,14 @@ import java.util.List;
 import static org.valeryvash.util.ServiceChecker.throwIfNull;
 
 //todo add entity id checks
-public class EventsService {
+public class EventService {
 
     private EventRepository eventRepository;
 
-    private EventsService() {
+    private EventService() {
     }
 
-    public EventsService(EventRepository eventRepository) {
+    public EventService(EventRepository eventRepository) {
         this.eventRepository = eventRepository;
     }
 
