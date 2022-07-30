@@ -4,9 +4,11 @@ import org.valeryvash.model.File;
 import org.valeryvash.repository.impl.HibernateFileRepositoryImpl;
 import org.valeryvash.service.FileService;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
-import javax.servlet.annotation.*;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
@@ -20,43 +22,23 @@ public class FileViewServlet extends HttpServlet {
         fileService = new FileService(new HibernateFileRepositoryImpl());
     }
 
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        String action = request.getParameter("action").toLowerCase();
-
-        Long id = Long.valueOf(request.getParameter("id"));
-        String name = request.getParameter("name");
-        String filePath = request.getParameter("filePath");
+        Long id = null;
 
         File file = null;
         List<File> fileList = null;
 
-        switch (action) {
-            case "add" -> {
-                file = new File();
-                file.setFilePath(filePath);
-                file.setName(name);
-                file = fileService.add(file);
-            }
-            case "get" -> {
-                file = fileService.get(id);
-            }
-            case "update" -> {
-                file = fileService.get(id);
-                file.setFilePath(filePath);
-                file.setName(name);
-                file = fileService.update(file);
-            }
-            case "remove" -> {
-                file = fileService.remove(id);
-            }
-            case "getall" -> {
-                fileList = fileService.getAll();
-            }
-            default -> {
-                throw new IllegalArgumentException("Servlet has no such action");
-            }
+        try {
+            id = Long.valueOf(request.getParameter("id"));
+            file = fileService.get(id);
+        } catch (NumberFormatException ignored) {
+        }
+
+        if (file == null) {
+            fileList = fileService.getAll();
         }
 
         response.setContentType("text/html");
@@ -66,9 +48,13 @@ public class FileViewServlet extends HttpServlet {
             start(writer);
             body(writer,file);
             end(writer);
-        } else if (fileList != null && !fileList.isEmpty()) {
+        } else if (fileList != null) {
             start(writer);
-            body(writer,fileList);
+            if (fileList.isEmpty()) {
+                writer.println("<h3>There is no files</h3>");
+            } else {
+                body(writer,fileList);
+            }
             end(writer);
         } else {
             throw new ServletException("Unexpected servlet condition");
@@ -77,7 +63,57 @@ public class FileViewServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doGet(request, response);
+        String name = request.getParameter("name");
+        String filePath = request.getParameter("filePath");
+
+        File file = new File();
+
+        file.setName(name);
+        file.setFilePath(filePath);
+
+        file = fileService.add(file);
+
+        response.setContentType("text/html");
+        PrintWriter writer = response.getWriter();
+
+        start(writer);
+        body(writer,file);
+        end(writer);
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        Long id = Long.valueOf(request.getParameter("id"));
+        String name = request.getParameter("name");
+        String filePath = request.getParameter("filePath");
+
+        File file = fileService.get(id);
+
+        file.setName(name);
+        file.setFilePath(filePath);
+
+        file = fileService.update(file);
+
+        response.setContentType("text/html");
+        PrintWriter writer = response.getWriter();
+
+        start(writer);
+        body(writer,file);
+        end(writer);
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        Long id = Long.valueOf(request.getParameter("id"));
+
+        File file = fileService.remove(id);
+
+        response.setContentType("text/html");
+        PrintWriter writer = response.getWriter();
+
+        start(writer);
+        body(writer,file);
+        end(writer);
     }
 
     private void start(PrintWriter writer) throws IOException {
