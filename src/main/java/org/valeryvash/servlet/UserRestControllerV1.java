@@ -1,8 +1,6 @@
 package org.valeryvash.servlet;
 
-import org.valeryvash.model.File;
 import org.valeryvash.model.User;
-import org.valeryvash.repository.impl.HibernateUserRepositoryImpl;
 import org.valeryvash.service.UserService;
 
 import javax.servlet.*;
@@ -11,16 +9,17 @@ import javax.servlet.annotation.*;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
-import java.util.Map;
 
-@WebServlet(name = "UserViewServlet", value = "/user-view-servlet")
-public class UserViewServlet extends HttpServlet {
+@WebServlet(name = "UserRestControllerV1", value = "/api/v1/users/*")
+public class UserRestControllerV1 extends HttpServlet {
 
-    private static UserService userService;
+    private final String URI = "/api/v1/users";
+    private final UserService userService;
 
-    static {
-        userService = new UserService(new HibernateUserRepositoryImpl());
+    public UserRestControllerV1() {
+        this.userService = new UserService();
     }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
@@ -31,12 +30,12 @@ public class UserViewServlet extends HttpServlet {
 
         try {
             id = Long.valueOf("id");
-            user = userService.get(id);
+//            user = userService.get(id);
         } catch (NumberFormatException ignored) {
         }
 
         if (user == null) {
-            userList = userService.getAll();
+//            userList = userService.getAll();
         }
 
         response.setContentType("text/html");
@@ -66,7 +65,7 @@ public class UserViewServlet extends HttpServlet {
         User user = new User();
         user.setName(name);
 
-        user = userService.add(user);
+//        user = userService.add(user);
 
         response.setContentType("text/html");
         PrintWriter writer = response.getWriter();
@@ -82,15 +81,15 @@ public class UserViewServlet extends HttpServlet {
         Long id = Long.valueOf(request.getParameter("id"));
         String name = request.getParameter("name");
 
-        User user = userService.get(id);
-        user.setName(name);
+//        User user = userService.get(id);
+//        user.setName(name);
 
-        user = userService.update(user);
+//        user = userService.update(user);
 
         PrintWriter writer = response.getWriter();
 
         start(writer);
-        body(writer,user);
+//        body(writer,user);
         end(writer);
     }
 
@@ -98,13 +97,13 @@ public class UserViewServlet extends HttpServlet {
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Long id = Long.valueOf(request.getParameter("id"));
 
-        User user = userService.remove(id);
+//        User user = userService.remove(id);
 
         response.setContentType("text/html");
         PrintWriter writer = response.getWriter();
 
         start(writer);
-        body(writer,user);
+//        body(writer,user);
         end(writer);
     }
 

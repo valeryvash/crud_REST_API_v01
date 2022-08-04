@@ -3,7 +3,7 @@ package org.valeryvash.servlet;
 import org.valeryvash.model.Event;
 import org.valeryvash.model.EventType;
 import org.valeryvash.model.File;
-import org.valeryvash.repository.impl.HibernateEventRepositoryImpl;
+import org.valeryvash.model.User;
 import org.valeryvash.service.EventService;
 
 import javax.servlet.*;
@@ -11,54 +11,28 @@ import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
-@WebServlet(name = "EventViewServlet", value = "/event-view-servlet")
-public class EventViewServlet extends HttpServlet {
+@WebServlet(name = "EventRestControllerV1", value = "/api/v1/events/*")
+public class EventRestControllerV1 extends HttpServlet {
 
-    private static EventService eventService;
+    private final String URI = "/api/v1/events";
+    private final EventService eventService;
 
-    static {
-        eventService = new EventService(new HibernateEventRepositoryImpl());
+    public EventRestControllerV1() {
+        this.eventService = new EventService();
     }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String action = request.getParameter("action");
 
-        Long id = Long.valueOf(request.getParameter("id"));
         Long fileId = Long.valueOf(request.getParameter("file_id"));
-        Date date = new Date();
         EventType eventType = EventType.valueOf(request.getParameter("eventType"));
         Long userId = Long.valueOf(request.getParameter("userId"));
 
         Event event = null;
         List<Event> eventList = null;
 
-        switch (action) {
-            case "add" -> {
-                
-            }
-            case "get" -> {
-                event = eventService.get(id);
-            }
-            case "update" -> {
-                event = eventService.get(id);
-                event.setEventType(eventType);
-                event.setTimestamp(date);
-                eventService.update(event);
-            }
-            case "remove" -> {
-                event = eventService.remove(id);
-            }
-            case "getAll" -> {
-                eventList = eventService.getAll();
-            }
-            default -> {
-                throw new IllegalArgumentException("Servlet has no such action");
-            }
-        }
 
         response.setContentType("text/html");
         PrintWriter writer = response.getWriter();
@@ -78,7 +52,23 @@ public class EventViewServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doGet(request, response);
+
+        Long fileId = Long.valueOf(request.getParameter("file_id"));
+        EventType eventType = EventType.valueOf(request.getParameter("eventType"));
+        Long userId = Long.valueOf(request.getParameter("userId"));
+
+        Event event = new Event();
+        File file = null;
+        User user = null;
+
+        response.setContentType("text/html");
+        PrintWriter writer = response.getWriter();
+
+
+        start(writer);
+        body(writer, event);
+        end(writer);
+
     }
 
     private void start(PrintWriter writer) throws IOException {

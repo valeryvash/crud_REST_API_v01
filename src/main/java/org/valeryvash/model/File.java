@@ -1,13 +1,17 @@
 package org.valeryvash.model;
 
 import jakarta.persistence.*;
-
-import java.util.List;
+import lombok.*;
 
 @Entity
 @Table(
         name = "files"
 )
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class File {
 
     @Id
@@ -26,47 +30,13 @@ public class File {
     )
     private String filePath;
 
-    @OneToMany(
+    @OneToOne(
             targetEntity = Event.class,
             cascade = {CascadeType.PERSIST,CascadeType.MERGE},
             fetch = FetchType.LAZY,
             mappedBy = "file",
             orphanRemoval = true
     )
-    private List<Event> events;
+    private Event event;
 
-    public File() {
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getFilePath() {
-        return filePath;
-    }
-
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
-    }
-
-    public List<Event> getEvents() {
-        return events;
-    }
-
-    public void setEvents(List<Event> eventList) {
-        this.events = eventList;
-    }
 }

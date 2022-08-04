@@ -36,7 +36,16 @@ public class HibernateFileRepositoryImpl implements FileRepository {
         File file = null;
 
         try (Session session = provideSession()) {
-            file = session.get(File.class, entityId);
+//            file = session.get(File.class, entityId);
+            file = session.createQuery("""
+                            FROM File file 
+                            LEFT JOIN FETCH file.event e
+                            LEFT JOIN FETCH e.user
+                            WHERE file.id = :id
+                            """, File.class)
+                    .setParameter("id", entityId)
+                    .getSingleResult();
+
         } catch (HibernateException e) {
             e.printStackTrace();
         }

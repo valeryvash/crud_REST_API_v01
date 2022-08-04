@@ -8,21 +8,8 @@ import java.util.List;
 
 public class EntityConsolePrinter {
 
-    public static void print(Object entity) {
-        if (entity == null) {
-            throw new NullPointerException("Null in EntityConsolePrinter.print(Object object) method");
-        } else if (entity instanceof User) {
-            print((User) entity);
-        } else if (entity instanceof Event) {
-            print((Event) entity);
-        } else if (entity instanceof File) {
-            print((File) entity);
-        } else {
-            System.out.println("No such entity");
-        }
-    }
 
-    private static void print(User user) {
+    public static void print(User user) {
         System.out.printf(
                 "UserRepository: [ id: %0,10d | name: %-25s ]\n",
                 user.getId(),
@@ -56,12 +43,33 @@ public class EntityConsolePrinter {
         }
     }
 
-    private static void print(File file) {
+    public static void print(File file) {
         System.out.printf(
                 "File: [ id: %0,10d | name: %-25s | file path: %-25s ]\n",
                 file.getId(),
                 file.getName(),
                 file.getFilePath()
         );
+
+        Event event = file.getEvent();
+
+        if (event != null) {
+            System.out.printf(
+                    "Event: [ id: %0,10d | event type: %-25s | time stamp: -25d ]\n",
+                    event.getId(),
+                    event.getEventType().toString()
+//                    ,event.getTimestamp().toString()
+            );
+
+            User user = event.getUser();
+
+            if (user != null) {
+                System.out.printf(
+                        "User: [ id: %0,10d | name: %-25s ]\n",
+                        user.getId(),
+                        user.getName()
+                );
+            }
+        }
     }
 }

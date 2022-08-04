@@ -1,6 +1,7 @@
 package org.valeryvash.model;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.util.List;
 
@@ -8,6 +9,11 @@ import java.util.List;
 @Table(
         name = "users"
 )
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User {
 
     @Id
@@ -16,7 +22,6 @@ public class User {
 
     @Column(
             name = "name",
-            unique = true,
             nullable = false,
             length = 25
     )
@@ -30,31 +35,4 @@ public class User {
     )
     private List<Event> events;
 
-
-    public User() {
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public List<Event> getEvents() {
-        return events;
-    }
-
-    public void setEvents(List<Event> eventList) {
-        this.events = eventList;
-    }
 }

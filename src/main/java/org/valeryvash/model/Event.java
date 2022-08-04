@@ -1,24 +1,31 @@
 package org.valeryvash.model;
 
 import jakarta.persistence.*;
-
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import java.util.Date;
 
 @Entity
 @Table(
         name = "events"
 )
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Event {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne(
+    @OneToOne(
             targetEntity = File.class,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE},
             fetch = FetchType.LAZY,
-            optional = false
+            optional = false,
+            orphanRemoval = true
     )
     @JoinColumn(
             table = "events",
@@ -28,6 +35,7 @@ public class Event {
     private File file;
 
     @Temporal(value = TemporalType.TIMESTAMP)
+    @CreationTimestamp
     private Date timestamp;
 
     @Column(
@@ -45,47 +53,4 @@ public class Event {
             optional = false
     )
     private User user;
-
-    public Event() {
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public File getFile() {
-        return file;
-    }
-
-    public void setFile(File file) {
-        this.file = file;
-    }
-
-    public Date getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public EventType getEventType() {
-        return eventType;
-    }
-
-    public void setEventType(EventType eventType) {
-        this.eventType = eventType;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User relatedUser) {
-        this.user = relatedUser;
-    }
 }

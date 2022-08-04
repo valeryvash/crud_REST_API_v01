@@ -2,6 +2,7 @@ package org.valeryvash.service;
 
 import org.valeryvash.model.Event;
 import org.valeryvash.repository.EventRepository;
+import org.valeryvash.repository.impl.HibernateEventRepositoryImpl;
 
 import java.util.List;
 
@@ -10,13 +11,10 @@ import static org.valeryvash.util.ServiceChecker.throwIfNull;
 //todo add entity id checks
 public class EventService {
 
-    private EventRepository eventRepository;
+    private final EventRepository eventRepository;
 
-    private EventService() {
-    }
-
-    public EventService(EventRepository eventRepository) {
-        this.eventRepository = eventRepository;
+    public EventService() {
+        eventRepository = new HibernateEventRepositoryImpl();
     }
 
     public Event add(Event entity) {

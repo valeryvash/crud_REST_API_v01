@@ -1,48 +1,71 @@
 package org.valeryvash.service;
 
+import org.modelmapper.ModelMapper;
+import org.valeryvash.dto.UserDto;
 import org.valeryvash.model.User;
 import org.valeryvash.repository.UserRepository;
+import org.valeryvash.repository.impl.HibernateUserRepositoryImpl;
 
 import java.util.List;
 
 import static org.valeryvash.util.ServiceChecker.throwIfNull;
-
-// todo entity id checks
 public class UserService {
 
-    private UserRepository userRepository;
+    private final ModelMapper modelMapper;
+    private final UserRepository userRepository;
 
-    private UserService() {}
-
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserService() {
+        userRepository = new HibernateUserRepositoryImpl();
+        modelMapper = new ModelMapper();
     }
 
-    public User add(User entity) {
-        throwIfNull(entity);
-
-        return userRepository.add(entity);
+    private UserDto convertToDto(User user) {
+        return modelMapper.map(user, UserDto.class);
     }
 
-    public User get(Long entityId) {
+    private User convertToEntity(UserDto userDto) {
+        return modelMapper.map(userDto, User.class);
+    }
+
+    public UserDto add(UserDto userDto) {
+        throwIfNull(userDto);
+
+        User user = convertToEntity(userDto);
+        user = userRepository.add(user);
+
+        return convertToDto(user);
+    }
+
+    public UserDto get(Long entityId) {
         throwIfNull(entityId);
 
-        return userRepository.get(entityId);
+        User user = userRepository.get(entityId);
+
+        return convertToDto(user);
     }
 
-    public User update(User entity) {
-        throwIfNull(entity);
+    public UserDto update(UserDto userDto) {
+        throwIfNull(userDto);
 
-        return userRepository.update(entity);
+        User user = modelMapper.map(userDto, User.class);
+
+        user = userRepository.update(user);
+
+        return modelMapper.map(user, UserDto.class);
     }
 
-    public User remove(Long entityId) {
+    public UserDto remove(Long entityId) {
         throwIfNull(entityId);
 
-        return userRepository.remove(entityId);
+        User user = userRepository.remove(entityId);
+
+        return modelMapper.map(user, UserDto.class);
     }
 
-    public List<User> getAll() {
-        return userRepository.getAll();
+    public List<UserDto> getAll() {
+        return userRepository.getAll()
+                .stream()
+                .map(user -> modelMapper.map(user, UserDto.class))
+                .toList();
     }
 }
