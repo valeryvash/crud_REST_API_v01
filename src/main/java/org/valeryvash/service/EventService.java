@@ -1,6 +1,9 @@
 package org.valeryvash.service;
 
+import org.valeryvash.dto.EventDto;
 import org.valeryvash.model.Event;
+import org.valeryvash.model.File;
+import org.valeryvash.model.User;
 import org.valeryvash.repository.EventRepository;
 import org.valeryvash.repository.impl.HibernateEventRepositoryImpl;
 
@@ -8,7 +11,11 @@ import java.util.List;
 
 import static org.valeryvash.util.ServiceChecker.throwIfNull;
 
-//todo add entity id checks
+/**
+ *  Сервис принимает на вход дто объект, конвертирует его в энтити,
+ *  совершает требуемый тип операции с репозиторием и возвращает
+ *  преобразованный вновь дто объект
+ */
 public class EventService {
 
     private final EventRepository eventRepository;
@@ -17,31 +24,87 @@ public class EventService {
         eventRepository = new HibernateEventRepositoryImpl();
     }
 
-    public Event add(Event entity) {
-        throwIfNull(entity);
+    private EventDto convertToDto(Event event) {
+        EventDto eventDto = new EventDto(
+                event.getId(),
+                event.getFile().getId(),
+                event.getFile().getName(),
+                event.getFile().getFilePath(),
+                event.getTimestamp(),
+                event.getEventType(),
+                event.getUser().getId(),
+                event.getUser().getName()
+        );
 
-        return eventRepository.add(entity) ;
+        return eventDto;
     }
 
-    public Event get(Long entityId) {
+    private Event convertToEntity(EventDto eventDto) {
+/**
+ *        FIXME Отсутствует фиксация эвента на список юзера
+ *        т.к. не известно сколько эвентов у данного юзера
+ *        возможные решения : уменьшить уровень вложенности
+ *        или начать доставать юзеров и файлы прямо в данном методе и связывать их
+ *
+ */
+
+        User eventUser = new User();
+        eventUser.setId(eventDto.getId());
+        eventUser.setName(eventDto.getFileName());
+
+        File file = new File();
+        file.setId(eventDto.getFileId());
+        file.setName(eventDto.getFileName());
+        file.setFilePath(eventDto.getFileFilePath());
+
+        Event event = new Event(
+                eventDto.getId(),
+                file,
+                eventDto.getTimestamp(),
+                eventDto.getEventType(),
+                eventUser
+        );
+
+        return event;
+    }
+
+
+    public EventDto add(EventDto dtoEntity) {
+        throwIfNull(dtoEntity);
+
+        Event event = convertToEntity(dtoEntity);
+
+        event = eventRepository.add(event);
+
+        return convertToDto(event);
+    }
+
+    public EventDto get(Long entityId) {
         throwIfNull(entityId);
 
-        return eventRepository.get(entityId);
+        return convertToDto(eventRepository.get(entityId));
     }
 
-    public Event update(Event entity) {
-        throwIfNull(entity);
+    public EventDto update(EventDto entityDto) {
+        throwIfNull(entityDto);
 
-        return eventRepository.update(entity);
+        Event event = convertToEntity(entityDto);
+
+        event = eventRepository.update(event);
+
+        return convertToDto(event);
     }
 
-    public Event remove(Long entityId) {
+    public EventDto remove(Long entityId) {
         throwIfNull(entityId);
 
-        return eventRepository.remove(entityId);
+        return convertToDto(eventRepository.remove(entityId));
     }
 
-    public List<Event> getAll() {
-        return eventRepository.getAll();
+    public List<EventDto> getAll() {
+        return eventRepository.getAll()
+                .stream()
+                .map(this::convertToDto)
+                .toList();
     }
 }

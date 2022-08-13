@@ -1,16 +1,16 @@
 package org.valeryvash.servlet;
 
-import org.valeryvash.model.Event;
-import org.valeryvash.model.EventType;
-import org.valeryvash.model.File;
-import org.valeryvash.model.User;
+import com.google.gson.Gson;
+import org.valeryvash.dto.EventDto;
 import org.valeryvash.service.EventService;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
-import javax.servlet.annotation.*;
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
 
 @WebServlet(name = "EventRestControllerV1", value = "/api/v1/events/*")
@@ -19,89 +19,55 @@ public class EventRestControllerV1 extends HttpServlet {
     private final String URI = "/api/v1/events";
     private final EventService eventService;
 
+    private final Gson gson;
+
     public EventRestControllerV1() {
         this.eventService = new EventService();
+        this.gson = new Gson();
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        Long fileId = Long.valueOf(request.getParameter("file_id"));
-        EventType eventType = EventType.valueOf(request.getParameter("eventType"));
-        Long userId = Long.valueOf(request.getParameter("userId"));
+        String uri = request.getRequestURI();
 
-        Event event = null;
-        List<Event> eventList = null;
+        EventDto eventDto = null;
+        List<EventDto> eventDtos = null;
 
-
-        response.setContentType("text/html");
-        PrintWriter writer = response.getWriter();
-
-        if (event != null) {
-            start(writer);
-            body(writer, event);
-            end(writer);
-        } else if (eventList != null && !eventList.isEmpty()) {
-            start(writer);
-            body(writer, eventList);
-            end(writer);
+        if (uri.length() != URI.length() ){
+            Long id = Long.valueOf(uri.substring(URI.length()+1));
+            eventDto = eventService.get(id);
+            responsePrinter(response,eventDto);
         } else {
-            throw new ServletException("Unexpected servlet condition");
+            eventDtos = eventService.getAll();
+            responsePrinter(response,eventDto);
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-        Long fileId = Long.valueOf(request.getParameter("file_id"));
-        EventType eventType = EventType.valueOf(request.getParameter("eventType"));
-        Long userId = Long.valueOf(request.getParameter("userId"));
-
-        Event event = new Event();
-        File file = null;
-        User user = null;
-
-        response.setContentType("text/html");
-        PrintWriter writer = response.getWriter();
-
-
-        start(writer);
-        body(writer, event);
-        end(writer);
-
+        //fixme add method body
+        doGet(request, response);
     }
 
-    private void start(PrintWriter writer) throws IOException {
-        writer.println("""
-                <!DOCTYPE html>
-                <html>
-                <head><title> Event-view servlet response </head></title> 
-                <body>
-                <body><h1> Event-view servlet response </h1>
-                """);
+    private void responsePrinter(HttpServletResponse response, EventDto eventDto) throws IOException {
+        String json = gson.toJson(eventDto);
+
+        response.setStatus(200);
+        response.setContentType("application/json");
+        response.getOutputStream().println(json);
     }
 
-    private void body(PrintWriter writer, Event event) {
-        writer.println("<h3>Event</h3>");
-        writer.println("ID : " + event.getId());
-        writer.println("<br/>");
-        writer.println("Event type : " + event.getEventType());
-        writer.println("<br/>");
-        writer.println("Date : " + event.getTimestamp().toString());
-        writer.println("FileId: " + event.getFile().getId());
-        writer.println("UserId: " + event.getUser().getId());
-        writer.println("<br/>");
-        writer.println("<br/>");
+    private void responsePrinter(HttpServletResponse response, List<EventDto> events) throws IOException {
+        response.setStatus(200);
+        response.setContentType("application/json");
+
+        ServletOutputStream responseOutputStream = response.getOutputStream();
+
+        for (EventDto event : events) {
+            String s = gson.toJson(event);
+            responseOutputStream.println(s);
+        }
     }
-
-    private void body(PrintWriter writer, List<Event> eventList) {
-        eventList.forEach(event -> body(writer,event));
-    }
-
-    private void end(PrintWriter writer) {
-        writer.println("</body></html>");
-    }
-
-
 
 }

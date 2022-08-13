@@ -50,7 +50,7 @@ public class HibernateUserRepositoryImpl implements UserRepository {
             List<File> files = session
                     .createQuery("""
                                     FROM File file
-                                    LEFT JOIN FETCH file.events events
+                                    LEFT JOIN FETCH file.event events
                                     WHERE events.user = :user                          
                                     """,
                             File.class)
@@ -128,7 +128,7 @@ public class HibernateUserRepositoryImpl implements UserRepository {
             List<File> files = session
                     .createQuery("""
                                     FROM File file
-                                    LEFT JOIN FETCH file.events events
+                                    LEFT JOIN FETCH file.event events
                                     WHERE events.user in (:list)                          
                                     """,
                             File.class)

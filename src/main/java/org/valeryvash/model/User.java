@@ -13,7 +13,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class User {
 
     @Id
@@ -28,7 +27,8 @@ public class User {
     private String name;
     @OneToMany(
             targetEntity = Event.class,
-            cascade = {CascadeType.PERSIST,CascadeType.MERGE},
+//            cascade = {CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REFRESH},
+            cascade = CascadeType.ALL,
             fetch = FetchType.LAZY,
             mappedBy = "user",
             orphanRemoval = true

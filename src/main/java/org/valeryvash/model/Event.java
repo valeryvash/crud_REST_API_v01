@@ -13,7 +13,6 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Event {
 
     @Id
@@ -22,7 +21,8 @@ public class Event {
 
     @OneToOne(
             targetEntity = File.class,
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+//            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+            cascade = {CascadeType.ALL},
             fetch = FetchType.LAZY,
             optional = false,
             orphanRemoval = true
@@ -34,8 +34,12 @@ public class Event {
     )
     private File file;
 
+    @Column(
+            name = "timestamp",
+            nullable = false,
+            updatable = false
+    )
     @Temporal(value = TemporalType.TIMESTAMP)
-    @CreationTimestamp
     private Date timestamp;
 
     @Column(
@@ -48,7 +52,8 @@ public class Event {
 
     @ManyToOne(
             targetEntity = User.class,
-            cascade = {CascadeType.PERSIST,CascadeType.MERGE},
+//            cascade = {CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REFRESH},
+            cascade = {CascadeType.ALL},
             fetch = FetchType.LAZY,
             optional = false
     )

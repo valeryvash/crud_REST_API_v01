@@ -1,68 +1,68 @@
 package org.valeryvash.service;
 
-import com.google.gson.Gson;
-import org.modelmapper.ModelMapper;
 import org.valeryvash.dto.FileDto;
 import org.valeryvash.model.Event;
 import org.valeryvash.model.File;
 import org.valeryvash.model.User;
 import org.valeryvash.repository.FileRepository;
 import org.valeryvash.repository.impl.HibernateFileRepositoryImpl;
-import org.valeryvash.util.EntityConsolePrinter;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.valeryvash.util.ServiceChecker.throwIfNull;
 public class FileService {
-    private final ModelMapper modelMapper;
 
     private final FileRepository fileRepository;
 
     public FileService() {
         fileRepository = new HibernateFileRepositoryImpl();
-        modelMapper = new ModelMapper();
     }
 
     private FileDto convertToDto(File file) {
-        return modelMapper.map(file, FileDto.class);
+        FileDto fileDto = new FileDto();
+        fileDto.setId(file.getId());
+        fileDto.setName(file.getName());
+        fileDto.setFilePath(file.getFilePath());
+
+        fileDto.setEventId(file.getEvent().getId());
+        fileDto.setEventEventType(file.getEvent().getEventType());
+        fileDto.setTimestamp(file.getEvent().getTimestamp());
+
+        fileDto.setEventUserId(file.getEvent().getUser().getId());
+        fileDto.setEventUserName(file.getEvent().getUser().getName());
+
+        return fileDto;
     }
 
     private File convertToEntity(FileDto fileDto) {
+        /**
+         * FIXME Здесь отстутствует связь юзера со списком событий
+         */
+        User user = new User();
+        user.setId(fileDto.getEventUserId());
+        user.setName(fileDto.getEventUserName());
 
-        File file =
-                File.builder()
-                        .id(fileDto.getId())
-                        .filePath(fileDto.getFilePath())
-                        .name(fileDto.getName())
-                        .event(
-                                Event.builder()
-                                        .id(fileDto.getEventId())
-                                        .eventType(fileDto.getEventEventType())
-//                                        .timestamp()
-                                        .user(
-                                                User.builder()
-                                                        .id(fileDto.getEventUserId())
-                                                        .name(fileDto.getEventUserName())
-                                                        .events(new ArrayList<>())
-                                                        .build())
-                                .build())
-                .build();
+        Event event = new Event();
+        event.setId(fileDto.getEventId());
+        event.setEventType(fileDto.getEventEventType());
+        event.setTimestamp(fileDto.getTimestamp());
 
-        Event event = file.getEvent();
-        User user = event.getUser();
-        user.getEvents().add(event);
+        File file = new File();
+        file.setId(fileDto.getId());
+        file.setName(fileDto.getName());
+        file.setFilePath(fileDto.getFilePath());
+
+        file.setEvent(event);
         event.setFile(file);
+        event.setUser(user);
 
         return file;
     }
 
     public FileDto add(FileDto dtoEntity) {
         throwIfNull(dtoEntity);
-        System.out.println(dtoEntity);
+
         File file = convertToEntity(dtoEntity);
-        EntityConsolePrinter.print(file);
         file = fileRepository.add(file);
 
         return convertToDto(file);

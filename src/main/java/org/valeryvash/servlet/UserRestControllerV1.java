@@ -1,13 +1,18 @@
 package org.valeryvash.servlet;
 
-import org.valeryvash.model.User;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import org.valeryvash.dto.FileDto;
+import org.valeryvash.dto.UserDto;
 import org.valeryvash.service.UserService;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
-import javax.servlet.annotation.*;
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
 
 @WebServlet(name = "UserRestControllerV1", value = "/api/v1/users/*")
@@ -16,122 +21,67 @@ public class UserRestControllerV1 extends HttpServlet {
     private final String URI = "/api/v1/users";
     private final UserService userService;
 
+    private final Gson gson;
+
     public UserRestControllerV1() {
         this.userService = new UserService();
+        this.gson = new Gson();
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        //fixme add method body
+        doGet(request, response);
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        Long id = null;
+        String uri = request.getRequestURI();
 
-        User user = null;
-        List<User> userList = null;
+        UserDto userDto = null;
+        List<UserDto> userDtos = null;
 
-        try {
-            id = Long.valueOf("id");
-//            user = userService.get(id);
-        } catch (NumberFormatException ignored) {
-        }
-
-        if (user == null) {
-//            userList = userService.getAll();
-        }
-
-        response.setContentType("text/html");
-        PrintWriter writer = response.getWriter();
-
-        if (user != null) {
-            start(writer);
-            body(writer, user);
-            end(writer);
-        } else if (userList != null) {
-            start(writer);
-            if (userList.isEmpty()) {
-                writer.println("<h3>There is no users</h3>");
-            } else {
-                body(writer, userList);
-            }
-            end(writer);
+        if (uri.length() != URI.length() ){
+            Long id = Long.valueOf(uri.substring(URI.length()+1));
+            userDto = userService.get(id);
+            responsePrinter(response,userDto);
         } else {
-            throw new ServletException("Unexpected servlet condition");
+            userDtos = userService.getAll();
+            responsePrinter(response,userDtos);
         }
     }
-
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String name = request.getParameter("name");
-
-        User user = new User();
-        user.setName(name);
-
-//        user = userService.add(user);
-
-        response.setContentType("text/html");
-        PrintWriter writer = response.getWriter();
-
-        start(writer);
-        body(writer,user);
-        end(writer);
-    }
-
 
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Long id = Long.valueOf(request.getParameter("id"));
-        String name = request.getParameter("name");
-
-//        User user = userService.get(id);
-//        user.setName(name);
-
-//        user = userService.update(user);
-
-        PrintWriter writer = response.getWriter();
-
-        start(writer);
-//        body(writer,user);
-        end(writer);
+        //fixme add work method body
+        doGet(request, response);
     }
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Long id = Long.valueOf(request.getParameter("id"));
-
-//        User user = userService.remove(id);
-
-        response.setContentType("text/html");
-        PrintWriter writer = response.getWriter();
-
-        start(writer);
-//        body(writer,user);
-        end(writer);
+        //fixme add work method body
+        doGet(request, response);
     }
 
-    private void start(PrintWriter writer) throws IOException {
-        writer.println("""
-                <!DOCTYPE html>
-                <html>
-                <head><title> User-view servlet response </head></title> 
-                <body>
-                <body><h1> User-view servlet response </h1>
-                """);
+    private void responsePrinter(HttpServletResponse response, UserDto userDto) throws IOException {
+        String json = gson.toJson(userDto);
+
+        response.setStatus(200);
+        response.setContentType("application/json");
+        response.getOutputStream().println(json);
     }
 
-    private void body(PrintWriter writer, User user) {
-        writer.println("<h3>User</h3>");
-        writer.println("ID : " + user.getId());
-        writer.println("<br/>");
-        writer.println("Name : " + user.getName());
-        writer.println("<br/>");
-        writer.println("<br/>");
-    }
+    private void responsePrinter(HttpServletResponse response, List<UserDto> users) throws IOException {
+        response.setStatus(200);
+        response.setContentType("application/json");
 
-    private void body(PrintWriter writer, List<User> userList) {
-        userList.forEach(user -> body(writer,user));
-    }
+        ServletOutputStream responseOutputStream = response.getOutputStream();
 
-    private void end(PrintWriter writer) {
-        writer.println("</body></html>");
+        for (UserDto user : users) {
+            String s = gson.toJson(user);
+            responseOutputStream.println(s);
+        }
     }
 
 }

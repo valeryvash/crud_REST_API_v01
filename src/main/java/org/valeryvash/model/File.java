@@ -11,7 +11,6 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class File {
 
     @Id
@@ -32,7 +31,8 @@ public class File {
 
     @OneToOne(
             targetEntity = Event.class,
-            cascade = {CascadeType.PERSIST,CascadeType.MERGE},
+//            cascade = {CascadeType.PERSIST,CascadeType.MERGE},
+            cascade = {CascadeType.ALL},
             fetch = FetchType.LAZY,
             mappedBy = "file",
             orphanRemoval = true

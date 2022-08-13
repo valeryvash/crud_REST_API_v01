@@ -19,6 +19,5 @@ create table users (
     name varchar(25) not null,
     primary key (id));
 
-alter table users add constraint UK_name unique (name);
 alter table events add constraint FK_file_id foreign key (file_id) references files (id);
 alter table events add constraint FK_user_id foreign key (user_id) references users (id);
