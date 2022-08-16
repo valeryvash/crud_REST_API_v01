@@ -4,7 +4,11 @@ import org.valeryvash.dto.UserDto;
 import org.valeryvash.model.Event;
 import org.valeryvash.model.File;
 import org.valeryvash.model.User;
+import org.valeryvash.repository.EventRepository;
+import org.valeryvash.repository.FileRepository;
 import org.valeryvash.repository.UserRepository;
+import org.valeryvash.repository.impl.HibernateEventRepositoryImpl;
+import org.valeryvash.repository.impl.HibernateFileRepositoryImpl;
 import org.valeryvash.repository.impl.HibernateUserRepositoryImpl;
 
 import java.util.List;
@@ -13,28 +17,36 @@ import static org.valeryvash.util.ServiceChecker.throwIfNull;
 public class UserService {
     private final UserRepository userRepository;
 
+    private final EventRepository eventRepository;
+
+    private final FileRepository fileRepository;
+
     public UserService() {
         userRepository = new HibernateUserRepositoryImpl();
+        eventRepository = new HibernateEventRepositoryImpl();
+        fileRepository = new HibernateFileRepositoryImpl();
     }
 
     private UserDto convertToDto(User user) {
         List<Event> events = user.getEvents();
+
         List<UserDto.EventDto> eventDtos = events
                 .stream()
                 .map(event -> {
                     UserDto.EventDto userEventDto = new UserDto.EventDto();
                     userEventDto.setId(event.getId());
+                    userEventDto.setTimestamp(event.getTimestamp());
+                    userEventDto.setEventType(event.getEventType());
+
                     userEventDto.setFileId(event.getFile().getId());
                     userEventDto.setFileName(event.getFile().getName());
                     userEventDto.setFileFilePath(event.getFile().getFilePath());
-                    userEventDto.setTimestamp(event.getTimestamp());
-                    userEventDto.setEventType(event.getEventType());
 
                     return userEventDto;
                 }).toList();
 
         UserDto userDto = new UserDto();
-        userDto.setId(userDto.getId());
+        userDto.setId(user.getId());
         userDto.setName(user.getName());
         userDto.setEvents(eventDtos);
 
@@ -42,8 +54,15 @@ public class UserService {
     }
 
     private User convertToEntity(UserDto userDto) {
-        User user = new User();
-        user.setId(userDto.getId());
+        boolean userIsNew = userDto.getId() == 0L;
+        User user = null;
+
+        if (userIsNew) {
+            user = new User();
+        } else {
+            user = userRepository.get(userDto.getId());
+        }
+
         user.setName(userDto.getName());
 
         List<UserDto.EventDto> eventDtos = userDto.getEvents();
@@ -51,18 +70,28 @@ public class UserService {
         List<Event> events = eventDtos
                 .stream()
                 .map(eventDto -> {
-                    Event event = new Event();
-                    event.setId(eventDto.getId());
+                    boolean eventIsNew = eventDto.getId() == 0L;
+                    boolean fileIsNew = eventDto.getFileId() == 0L;
+
+                    Event event = null;
+                    if (eventIsNew) {
+                        event = new Event();
+                    } else {
+                        event = eventRepository.get(eventDto.getId());
+                    }
                     event.setEventType(eventDto.getEventType());
                     event.setTimestamp(eventDto.getTimestamp());
 
-                    File file = new File();
-                    file.setId(eventDto.getFileId());
+                    File file = null;
+                    if (fileIsNew) {
+                        file = new File();
+                    } else {
+                        file = fileRepository.get(eventDto.getFileId());
+                    }
                     file.setName(eventDto.getFileName());
                     file.setFilePath(eventDto.getFileFilePath());
 
                     file.setEvent(event);
-                    event.setUser(user);
                     event.setFile(file);
 
                     return event;
@@ -78,6 +107,7 @@ public class UserService {
         throwIfNull(userDto);
 
         User user = convertToEntity(userDto);
+
         user = userRepository.add(user);
 
         return convertToDto(user);

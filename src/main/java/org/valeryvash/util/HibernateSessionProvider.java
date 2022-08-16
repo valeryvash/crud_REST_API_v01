@@ -3,39 +3,42 @@ package org.valeryvash.util;
 import org.hibernate.Session;
 import org.hibernate.SessionException;
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.valeryvash.model.Event;
 import org.valeryvash.model.File;
 import org.valeryvash.model.User;
 
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 
 public class HibernateSessionProvider {
     private static SessionFactory sessionFactory = null;
 
     static {
+        // environment variable shall be presented in OS settings
+        // you can find it (heroku) at your app settings -> Config vars -> press Reveal config vars
         final String CONNECTION_URL = System.getenv("CLEARDB_DATABASE_URL");
 
-        Properties properties = new Properties();
-        properties.put("hibernate.connection.url", CONNECTION_URL);
-        properties.put("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
-        properties.put("hibernate.connection.driver_class", "com.mysql.cj.jdbc.Driver");
-        properties.put("hibernate.jdbc.time_zone", "UTC");
-        properties.put("show_sql", "true");
-        properties.put("generate_statistics", "true");
-        properties.put("use_sql_comments", "true");
-        properties.put("hbm2ddl.auto", "validate");
+        Map<String, Object> settings = new HashMap<>();
+        // For deploy
+        settings.put("hibernate.connection.url", "jdbc:" + CONNECTION_URL);
+        // For internal test in Intellij IDEA
+//        settings.put("hibernate.connection.url", CONNECTION_URL);
 
-        Configuration conf =
-                new Configuration()
-                        .addAnnotatedClass(User.class)
-                        .addAnnotatedClass(Event.class)
-                        .addAnnotatedClass(File.class)
-                        .setProperties(properties);
+        StandardServiceRegistry standardServiceRegistry = new StandardServiceRegistryBuilder()
+                .configure() // load settings from hibernate.cfg.xml
+                .applySettings(settings) // apply connection url
+                .build();
 
-        sessionFactory =
-                conf.buildSessionFactory();
+        sessionFactory = new MetadataSources(standardServiceRegistry)
+                .addAnnotatedClass(User.class)
+                .addAnnotatedClass(Event.class)
+                .addAnnotatedClass(File.class)
+                .buildMetadata()
+                .buildSessionFactory();
 
     }
 

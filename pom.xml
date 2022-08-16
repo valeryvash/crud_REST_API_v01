@@ -23,12 +23,12 @@
         <jakarta.persistence.version>3.1.0</jakarta.persistence.version>
         <hibernate.version>6.1.1.Final</hibernate.version>
 
-        <mysql.connector.hibernate>8.0.30</mysql.connector.hibernate>
-        <mysql.connector.flyway>8.0.30</mysql.connector.flyway>
+        <hibernate.mysql.connector.version>8.0.30</hibernate.mysql.connector.version>
+        <flyway.mysql.connector.version>8.0.30</flyway.mysql.connector.version>
 
         <javax.servlet.version>4.0.1</javax.servlet.version>
-<!--        old version flyway (community edition) required for current CLEARDB realisation (MySQL 5.6). -->
-<!--        enterprise flyway version works with MySQL 5.6 -->
+<!--       old version flyway (community edition) required for current ClearDB realisation in heroku (MySQL 5.6) -->
+<!--       last version of flyway enterprise works with MySQL 5.6 -->
         <flyway.version>5.2.4</flyway.version>
         <cleardb.database.url>${env.CLEARDB_DATABASE_URL}</cleardb.database.url>
 
@@ -39,7 +39,7 @@
         <lombok.version>1.18.24</lombok.version>
 
         <tomcat7.plugin.version>2.2</tomcat7.plugin.version>
-
+<!--        heroku -->
         <heroku.maven.plugin.version>3.0.3</heroku.maven.plugin.version>
         <heroku.app.name>vshestak-servlets</heroku.app.name>
         <heroku.jdk.version>17.0.4</heroku.jdk.version>
@@ -61,7 +61,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>${mysql.connector.hibernate}</version>
+            <version>${hibernate.mysql.connector.version}</version>
         </dependency>
 
         <dependency>
@@ -110,7 +110,6 @@
                     <artifactId>maven-clean-plugin</artifactId>
                     <version>3.1.0</version>
                 </plugin>
-                <!-- see http://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_war_packaging -->
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>3.3.0</version>
@@ -167,7 +166,7 @@
                     <dependency>
                         <groupId>mysql</groupId>
                         <artifactId>mysql-connector-java</artifactId>
-                        <version>${mysql.connector.flyway}</version>
+                        <version>${flyway.mysql.connector.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>

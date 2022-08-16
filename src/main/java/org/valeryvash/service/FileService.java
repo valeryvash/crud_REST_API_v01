@@ -24,13 +24,6 @@ public class FileService {
         fileDto.setName(file.getName());
         fileDto.setFilePath(file.getFilePath());
 
-        fileDto.setEventId(file.getEvent().getId());
-        fileDto.setEventEventType(file.getEvent().getEventType());
-        fileDto.setTimestamp(file.getEvent().getTimestamp());
-
-        fileDto.setEventUserId(file.getEvent().getUser().getId());
-        fileDto.setEventUserName(file.getEvent().getUser().getName());
-
         return fileDto;
     }
 
@@ -38,34 +31,12 @@ public class FileService {
         /**
          * FIXME Здесь отстутствует связь юзера со списком событий
          */
-        User user = new User();
-        user.setId(fileDto.getEventUserId());
-        user.setName(fileDto.getEventUserName());
-
-        Event event = new Event();
-        event.setId(fileDto.getEventId());
-        event.setEventType(fileDto.getEventEventType());
-        event.setTimestamp(fileDto.getTimestamp());
-
         File file = new File();
         file.setId(fileDto.getId());
         file.setName(fileDto.getName());
         file.setFilePath(fileDto.getFilePath());
 
-        file.setEvent(event);
-        event.setFile(file);
-        event.setUser(user);
-
         return file;
-    }
-
-    public FileDto add(FileDto dtoEntity) {
-        throwIfNull(dtoEntity);
-
-        File file = convertToEntity(dtoEntity);
-        file = fileRepository.add(file);
-
-        return convertToDto(file);
     }
 
     public FileDto get(Long entityId) {
@@ -81,9 +52,13 @@ public class FileService {
 
         File file = convertToEntity(dtoEntity);
 
-        file = fileRepository.update(file);
+        File toBeUpdatedFile = fileRepository.get(file.getId());
+        toBeUpdatedFile.setName(file.getName());
+        toBeUpdatedFile.setFilePath(file.getFilePath());
 
-        return convertToDto(file);
+        toBeUpdatedFile = fileRepository.update(toBeUpdatedFile);
+
+        return convertToDto(toBeUpdatedFile);
     }
 
     public FileDto remove(Long entityId) {

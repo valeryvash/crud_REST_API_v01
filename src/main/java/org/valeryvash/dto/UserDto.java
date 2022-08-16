@@ -23,11 +23,11 @@ public class UserDto implements Serializable {
     @NoArgsConstructor
     public static class EventDto implements Serializable {
         private long id;
+        private Date timestamp;
+        private EventType eventType;
         private long fileId;
         private String fileName;
         private String fileFilePath;
-        private Date timestamp;
-        private EventType eventType;
     }
 
 }

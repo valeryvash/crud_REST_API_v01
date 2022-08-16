@@ -43,6 +43,7 @@ public class HibernateEventRepositoryImpl implements EventRepository {
                     .createQuery("""
                                     FROM Event event
                                     LEFT JOIN FETCH event.file
+                                    LEFT JOIN FETCH event.user
                                     WHERE event.id = :entityId 
                                     """,
                             Event.class)
@@ -104,7 +105,9 @@ public class HibernateEventRepositoryImpl implements EventRepository {
         try (Session session = provideSession()) {
             eventsToBeReturned = session
                     .createQuery("""
-                                    FROM Event
+                                    FROM Event event
+                                    LEFT JOIN FETCH event.file
+                                    LEFT JOIN FETCH event.user
                                     """,
                             Event.class)
                     .getResultList();

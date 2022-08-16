@@ -10,6 +10,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
 
@@ -27,27 +28,54 @@ public class EventRestControllerV1 extends HttpServlet {
     }
 
     @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String jsonString = stringRequestReader(request);
+
+        EventDto eventDto = gson.fromJson(jsonString,EventDto.class);
+
+        eventDto = eventService.add(eventDto);
+
+        responsePrinter(response,eventDto);
+    }
+
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        String uri = request.getRequestURI();
+        String value = request.getRequestURI().substring(URI.length()+1);
 
         EventDto eventDto = null;
         List<EventDto> eventDtos = null;
 
-        if (uri.length() != URI.length() ){
-            Long id = Long.valueOf(uri.substring(URI.length()+1));
+        if (!value.equals("")){
+            Long id = Long.valueOf(value);
             eventDto = eventService.get(id);
             responsePrinter(response,eventDto);
         } else {
             eventDtos = eventService.getAll();
-            responsePrinter(response,eventDto);
+            responsePrinter(response,eventDtos);
         }
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        //fixme add method body
-        doGet(request, response);
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String jsonString = stringRequestReader(request);
+
+        EventDto eventDto = gson.fromJson(jsonString, EventDto.class);
+
+        eventDto = eventService.update(eventDto);
+
+        responsePrinter(response,eventDto);
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String uri = request.getRequestURI();
+
+        Long id = Long.valueOf(uri.substring(URI.length()+1));
+
+        EventDto eventDto = eventService.remove(id);
+
+        responsePrinter(response,eventDto);
     }
 
     private void responsePrinter(HttpServletResponse response, EventDto eventDto) throws IOException {
@@ -68,6 +96,21 @@ public class EventRestControllerV1 extends HttpServlet {
             String s = gson.toJson(event);
             responseOutputStream.println(s);
         }
+    }
+
+    private String stringRequestReader(HttpServletRequest request) {
+        StringBuilder sb = new StringBuilder();
+
+        try (BufferedReader br = request.getReader()) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line).append('\n');
+            }
+        } catch (IOException ignored) {
+            ignored.printStackTrace();
+        }
+
+        return sb.toString();
     }
 
 }

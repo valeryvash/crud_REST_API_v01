@@ -1,8 +1,6 @@
 package org.valeryvash.servlet;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import org.valeryvash.dto.FileDto;
 import org.valeryvash.dto.UserDto;
 import org.valeryvash.service.UserService;
 
@@ -12,6 +10,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
 
@@ -30,20 +29,25 @@ public class UserRestControllerV1 extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        //fixme add method body
-        doGet(request, response);
+        String jsonString = stringRequestReader(request);
+
+        UserDto userDto = gson.fromJson(jsonString, UserDto.class);
+
+        userDto = userService.add(userDto);
+
+        responsePrinter(response,userDto);
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        String uri = request.getRequestURI();
+        String value = request.getRequestURI().substring(URI.length()+1);
 
         UserDto userDto = null;
         List<UserDto> userDtos = null;
 
-        if (uri.length() != URI.length() ){
-            Long id = Long.valueOf(uri.substring(URI.length()+1));
+        if (!value.equals("")){
+            Long id = Long.valueOf(value);
             userDto = userService.get(id);
             responsePrinter(response,userDto);
         } else {
@@ -54,14 +58,24 @@ public class UserRestControllerV1 extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        //fixme add work method body
-        doGet(request, response);
+        String jsonString = stringRequestReader(request);
+
+        UserDto userDto = gson.fromJson(jsonString, UserDto.class);
+
+        userDto = userService.update(userDto);
+
+        responsePrinter(response,userDto);
     }
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        //fixme add work method body
-        doGet(request, response);
+        String uri = request.getRequestURI();
+
+        Long id = Long.valueOf(uri.substring(URI.length()+1));
+
+        UserDto userDto = userService.remove(id);
+
+        responsePrinter(response,userDto);
     }
 
     private void responsePrinter(HttpServletResponse response, UserDto userDto) throws IOException {
@@ -82,6 +96,20 @@ public class UserRestControllerV1 extends HttpServlet {
             String s = gson.toJson(user);
             responseOutputStream.println(s);
         }
+    }
+
+    private String stringRequestReader(HttpServletRequest request) {
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader br = request.getReader()) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line).append('\n');
+            }
+        } catch (IOException ignored) {
+            ignored.printStackTrace();
+        }
+
+        return sb.toString();
     }
 
 }

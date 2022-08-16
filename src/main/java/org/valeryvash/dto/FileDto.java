@@ -17,9 +17,4 @@ public class FileDto implements Serializable {
     private long id;
     private String name;
     private String filePath;
-    private long eventId;
-    private EventType eventEventType;
-    private Date timestamp;
-    private long eventUserId;
-    private String eventUserName;
 }

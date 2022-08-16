@@ -10,6 +10,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
 
@@ -28,26 +29,51 @@ public class FileRestControllerV1 extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        //fixme add method body
-        doGet(request, response);
+        String jsonString = stringRequestReader(request);
+
+        FileDto fileDto = gson.fromJson(jsonString, FileDto.class);
+
+        fileDto = fileService.add(fileDto);
+
+        responsePrinter(response,fileDto);
     }
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-        String uri = request.getRequestURI();
+        String value = request.getRequestURI().substring(URI.length()+1);
 
         FileDto fileDto = null;
         List<FileDto> fileDtos = null;
 
-        if (uri.length() != URI.length() ){
-            Long id = Long.valueOf(uri.substring(URI.length()+1));
-            fileDto = fileService.get(id);
+        if (!value.equals("")){
+            Long id = Long.valueOf(value);
+            fileDto= fileService.get(id);
             responsePrinter(response,fileDto);
         } else {
             fileDtos = fileService.getAll();
             responsePrinter(response,fileDtos);
         }
+    }
 
+    @Override
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String jsonString = stringRequestReader(request);
+
+        FileDto fileDto = gson.fromJson(jsonString, FileDto.class);
+
+        fileDto = fileService.update(fileDto);
+
+        responsePrinter(response,fileDto);
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String uri = request.getRequestURI();
+
+        Long id = Long.valueOf(uri.substring(URI.length()+1));
+
+        FileDto fileDto = fileService.remove(id);
+
+        responsePrinter(response,fileDto);
     }
 
     private void responsePrinter(HttpServletResponse response, FileDto fileDto) throws IOException {
@@ -64,22 +90,23 @@ public class FileRestControllerV1 extends HttpServlet {
 
         ServletOutputStream responseOutputStream = response.getOutputStream();
 
-        for (FileDto file : files) {
-            String s = gson.toJson(file);
+        for (FileDto fileDto : files) {
+            String s = gson.toJson(fileDto);
             responseOutputStream.println(s);
         }
     }
 
-    @Override
-    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        //fixme add method body
-        doGet(request, response);
-    }
+    private String stringRequestReader(HttpServletRequest request) {
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader br = request.getReader()) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line).append('\n');
+            }
+        } catch (IOException ignored) {
+            ignored.printStackTrace();
+        }
 
-    @Override
-    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        //fixme add method body
-        doGet(request, response);
+        return sb.toString();
     }
-
 }
